@@ -6,6 +6,8 @@ __pycache__/
 .Python
 venv/
 env/
+venv_rag/
+.venv/
 
 # IDE
 .vscode/
@@ -31,3 +33,4 @@ Thumbs.db
 
 # Docker
 docker/data/
+*.log

@@ -1,38 +1,27 @@
-# Core
+# Core FastAPI
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
 pydantic==2.9.0
 pydantic-settings==2.5.0
 
-# LLM & RAG (Hugging Face - Free)
+# LLM & RAG (HuggingFace Hub Remote Inference)
 langchain==0.3.0
-langchain-huggingface==0.1.0
 langchain-community==0.3.0
-transformers==4.44.0
-torch>=2.0.0
+langchain-text-splitters==0.3.8
+huggingface_hub>=0.24.0
 
-# Vector Store
+# Vector Store & Search
 faiss-cpu==1.8.0
-sentence-transformers==3.2.0
-
-# Voice Processing (Optional - uncomment if needed)
-# openai-whisper==20240930
-# pyttsx3==2.90
+rank_bm25==0.2.2
 
 # Document Processing
 pypdf==5.0.0
-python-docx==1.1.0
 
-# Database
-sqlalchemy==2.0.35
+# Frontend UI
+streamlit>=1.38.0
 
 # Utilities
 python-dotenv==1.0.1
 aiofiles==24.1.0
 python-multipart==0.0.12
-
-# Development
-pytest==8.3.0
-pytest-asyncio==0.24.0
-black==24.8.0
-ruff==0.7.0
+requests>=2.31.0

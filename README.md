@@ -1,171 +1,136 @@
-# RAG Voice Boilerplate
+# RAG Voice Boilerplate — Multilingual Conversational RAG Assistant
 
-A production-ready Python boilerplate for building RAG (Retrieval Augmented Generation) applications with voice processing capabilities.
+A production-ready, **fully local and free** RAG (Retrieval-Augmented Generation) assistant with a Streamlit chat UI, hybrid search (FAISS + BM25), conversational memory, and multilingual Arabic/English answers with source citations.
 
-## 🚀 Features
+> Built by **Montassar Chorfi** — Data Scientist & Big Data Specialist
 
-- **📚 RAG Engine Integration** - Built with LangChain and OpenAI
-- **🎤 Voice Processing Pipeline** - Speech-to-text and text-to-speech
-- **🗄️ Vector Store Support** - FAISS for efficient similarity search
-- **🐋 Docker Containerization** - Ready for deployment
-- **🧪 Testing Infrastructure** - Pytest setup included
-- **🔧 Modular Architecture** - Easy to extend and customize
+---
 
-## 📁 Project Structure
+## ✨ Features
+
+- 🔍 **Hybrid Search** — FAISS embeddings + BM25 keyword retrieval (ensemble 70/30)
+- 🌍 **Multilingual** — optimized for Arabic & English using `paraphrase-multilingual-MiniLM-L12-v2` embeddings
+- 🧠 **Conversational Memory** — follow-up questions work naturally
+- 🏠 **Fully Local LLM** — no cloud credits, no API cost (Ollama + `qwen2.5:3b`)
+- 📚 **Source Citations** — every answer shows the exact document chunks used
+- 📤 **On-the-fly uploads** — index PDF/TXT documents directly from the UI
+- 🎛️ **Source scoping** — trusted agency docs vs. all uploaded documents
+- 🗂️ **Hybrid sync** — `run_app.bat` + optional C→D backup sync script
+
+---
+
+## 🚀 Quickstart (Windows)
+
+1. **Install Ollama** from https://ollama.com/download
+2. **Pull a model**:
+   ```bash
+   ollama pull qwen2.5:3b
+   ```
+3. **Create a Python venv** and install requirements:
+   ```bash
+   python -m venv venv_rag
+   venv_rag\Scripts\pip install -r requirements.txt
+   ```
+4. **Create `.env`** (optional — defaults work with local Ollama):
+   ```
+   OLLAMA_BASE_URL=http://localhost:11434
+   OLLAMA_MODEL=qwen2.5:3b
+   DEBUG=true
+   ```
+5. **Launch**:
+   ```bash
+   run_app.bat
+   ```
+   → Backend: `http://localhost:8000` · UI: `http://localhost:8501`
+
+---
+
+## 🧱 Architecture
 
 ```
-rag-voice-boilerplate/
-├── app/
-│   ├── __init__.py
-│   ├── main.py
-│   ├── config.py
-│   ├── api/
-│   │   ├── __init__.py
-│   │   └── routes.py
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── rag_engine.py
-│   │   ├── voice_processor.py
-│   │   └── document_processor.py
-│   ├── database/
-│   │   ├── __init__.py
-│   │   ├── vector_store.py
-│   │   └── db.py
-│   └── utils/
-│       ├── __init__.py
-│       └── helpers.py
-├── tests/
-│   └── __init__.py
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
+Streamlit UI (8501)  ──HTTP──►  FastAPI (8000)  ──►  RAGEngine (LangChain)
+                                                       │
+                                     ┌─────────────────┴─────────────────┐
+                                 Ollama LLM (local)             VectorStore (FAISS+BM25)
+                                 qwen2.5:3b                     embeddings: multilingual
+```
+
+Key modules:
+
+| Path | Role |
+|---|---|
+| `app/api/routes.py` | FastAPI endpoints (`/query`, `/documents/upload`) |
+| `app/core/rag_engine.py` | RAG orchestration + conversational memory |
+| `app/database/vector_store.py` | FAISS store, hybrid retriever, category filter |
+| `app/config.py` | Central settings (Ollama, chunking, embeddings) |
+| `app_ui.py` | Streamlit chat interface |
+
+---
+
+## 🔌 API Reference
+
+### Query the assistant
+```
+POST /api/v1/query?question=<text>&session_id=<id>&category=agency|all
+```
+`category=agency` — only trusted base documents · `category=all` — include user uploads.
+
+### Upload a document
+```
+POST /api/v1/documents/upload  (multipart, field `file`: .pdf/.txt/.md)
+```
+PDFs are parsed with `pypdf`; text is chunked (CHUNK_SIZE=500, overlap=100) and embedded.
+
+---
+
+## ⚙️ Configuration (`app/config.py` / `.env`)
+
+| Setting | Default | Purpose |
+|---|---|---|
+| `OLLAMA_MODEL` | `qwen2.5:3b` | Local LLM model |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama endpoint |
+| `EMBEDDING_MODEL` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Embeddings via HF Inference |
+| `CHUNK_SIZE` / `CHUNK_OVERLAP` | `500` / `100` | Document chunking |
+| `VECTOR_STORE_PATH` | `./data/vector_store` | FAISS index location (gitignored) |
+
+> Note: embeddings use the HuggingFace Inference API. If your HF account has no included credits left, you may switch to a local embedding model instead.
+
+---
+
+## 🧪 Evaluation
+
+```bash
+python tests/evaluation/evaluate_rag.py
+```
+
+---
+
+## 📁 Repository Layout (public)
+
+```
+├── app/                  # Backend (FastAPI + RAG)
+│   ├── api/routes.py
+│   ├── core/rag_engine.py
+│   └── database/vector_store.py
+├── app_ui.py             # Streamlit chat UI
+├── main.py               # FastAPI entrypoint
+├── run_app.bat           # One-click launcher
 ├── requirements.txt
-└── README.md
+├── PROJECT_OVERVIEW.md   # Full technical spec
+└── palmera_widget.js     # Embeddable widget (refer to docs)
 ```
 
-## 🛠️ Installation
+Private data (`data/`, `.env`, `venv_rag/`) is excluded via `.gitignore` for a clean public showcase.
 
-### Local Development
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/rag-voice-boilerplate.git
-cd rag-voice-boilerplate
-```
-
-2. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Create `.env` file:
-```bash
-OPENAI_API_KEY=your_api_key_here
-DEBUG=true
-```
-
-5. Run the application:
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-### Docker
-
-1. Build and run with Docker Compose:
-```bash
-cd docker
-docker-compose up -d
-```
-
-2. The API will be available at `http://localhost:8000`
-
-## 📚 API Endpoints
-
-### Query Endpoints
-
-- `POST /api/v1/query` - Query with text
-- `POST /api/v1/query/voice` - Query with voice
-
-### Document Endpoints
-
-- `POST /api/v1/documents/upload` - Upload a document
-- `POST /api/v1/documents/text` - Add text document
-- `GET /api/v1/documents` - List all documents
-
-### Conversation Endpoints
-
-- `GET /api/v1/conversations` - List recent conversations
-
-## 🔧 Configuration
-
-All configuration is in `config.py`. You can customize:
-
-- **OpenAI Settings**: Model, API key
-- **Vector Store**: Embedding model, storage path
-- **Voice Processing**: Whisper model, TTS engine
-- **Chunking**: Size and overlap
-
-## 🧪 Testing
-
-```bash
-pytest tests/
-```
-
-## 📝 Example Usage
-
-### Add a Document
-
-```python
-import requests
-
-# Upload PDF
-files = {"file": open("document.pdf", "rb")}
-response = requests.post("http://localhost:8000/api/v1/documents/upload", files=files)
-print(response.json())
-```
-
-### Query the RAG Engine
-
-```python
-import requests
-
-# Text query
-response = requests.post(
-    "http://localhost:8000/api/v1/query",
-    params={"question": "What is the document about?"}
-)
-print(response.json())
-```
-
-### Voice Query
-
-```python
-import requests
-
-# Voice query
-files = {"audio": open("recording.wav", "rb")}
-response = requests.post("http://localhost:8000/api/v1/query/voice", files=files)
-with open("response.wav", "wb") as f:
-    f.write(response.content)
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT — see `LICENSE`.
 
 ## 👨‍💻 Author
 
-**Montasse Chorfi** - Data Scientist & Big Data Specialist
+**Montassar Chorfi**
 
 - GitHub: [montasser-chorfiBDDS](https://github.com/montasser-chorfiBDDS)
 - Email: montasserchorfi26@gmail.com
