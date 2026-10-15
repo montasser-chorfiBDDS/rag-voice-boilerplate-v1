@@ -10,33 +10,18 @@ from langchain.embeddings.base import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
-from huggingface_hub import InferenceClient
-from typing import List
+from langchain_community.embeddings import OllamaEmbeddings
 
 from app.config import settings
-
-
-class HFHubEmbeddings(Embeddings):
-    """Embeddings using huggingface_hub InferenceClient (new router endpoint)."""
-
-    def __init__(self, model_name: str, api_key: str):
-        self.client = InferenceClient(model=model_name, token=api_key)
-
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        return self.client.feature_extraction(texts).tolist()
-
-    def embed_query(self, text: str) -> List[float]:
-        result = self.client.feature_extraction(text)
-        return result.tolist() if hasattr(result[0], '__iter__') is False else result[0].tolist()
 
 
 class VectorStore:
     """Vector store for document embeddings and retrieval."""
 
     def __init__(self):
-        self.embeddings = HFHubEmbeddings(
-            model_name=settings.EMBEDDING_MODEL,
-            api_key=settings.HUGGINGFACE_API_KEY
+        self.embeddings = OllamaEmbeddings(
+            model=settings.OLLAMA_EMBEDDING_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
         )
         self.vector_store = None
         self._load_or_create_store()

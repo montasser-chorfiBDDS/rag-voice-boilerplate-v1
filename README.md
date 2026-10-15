@@ -9,7 +9,7 @@ A production-ready, **fully local and free** RAG (Retrieval-Augmented Generation
 ## ✨ Features
 
 - 🔍 **Hybrid Search** — FAISS embeddings + BM25 keyword retrieval (ensemble 70/30)
-- 🌍 **Multilingual** — optimized for Arabic & English using `paraphrase-multilingual-MiniLM-L12-v2` embeddings
+- 🌍 **Multilingual** — optimized for Arabic & English using local `bge-m3` Ollama embeddings
 - 🧠 **Conversational Memory** — follow-up questions work naturally
 - 🏠 **Fully Local LLM** — no cloud credits, no API cost (Ollama + `qwen2.5:3b`)
 - 📚 **Source Citations** — every answer shows the exact document chunks used
@@ -89,11 +89,11 @@ PDFs are parsed with `pypdf`; text is chunked (CHUNK_SIZE=500, overlap=100) and 
 |---|---|---|
 | `OLLAMA_MODEL` | `qwen2.5:3b` | Local LLM model |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama endpoint |
-| `EMBEDDING_MODEL` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | Embeddings via HF Inference |
+| `OLLAMA_EMBEDDING_MODEL` | `bge-m3` | Local multilingual embeddings |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `500` / `100` | Document chunking |
 | `VECTOR_STORE_PATH` | `./data/vector_store` | FAISS index location (gitignored) |
 
-> Note: embeddings use the HuggingFace Inference API. If your HF account has no included credits left, you may switch to a local embedding model instead.
+> Everything runs locally: the LLM (`qwen2.5:3b`) and the embeddings (`bge-m3`, multilingual) are both served by Ollama — no cloud API or credits required. Pull them once with `ollama pull qwen2.5:3b` and `ollama pull bge-m3`.
 
 ---
 
